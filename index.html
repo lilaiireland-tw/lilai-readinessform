@@ -864,45 +864,7 @@ textarea.text-input {
 
 </style>
 </head>
-
-    <script>
-        let lastReportedHeight = 0;
-    
-        function sendHeight() {
-            // 業界最嚴謹的高度計算公式，確保不管 HTML 或 Body 誰被撐開都能抓到
-            const body = document.body;
-            const html = document.documentElement;
-            const currentHeight = Math.max(
-                body.scrollHeight, body.offsetHeight,
-                html.clientHeight, html.scrollHeight, html.offsetHeight
-            );
-    
-            // 容錯門檻：高度變化大於 5px 才發送，完美避開無限顫抖死循環
-            if (Math.abs(currentHeight - lastReportedHeight) > 5) {
-                lastReportedHeight = currentHeight;
-                window.parent.postMessage({ type: 'resize-iframe', height: currentHeight }, '*');
-            }
-        }
-    
-        // 1. 網頁載入與視窗改變時觸發
-        window.addEventListener('load', sendHeight);
-        window.addEventListener('resize', sendHeight);
-    
-        // 2. 監聽 DOM 元素的尺寸變化
-        const observer = new ResizeObserver(sendHeight);
-        observer.observe(document.body);
-    
-        // 3. 終極殺手鐧：針對手風琴動畫的點擊監聽
-        document.addEventListener('click', function() {
-            // 利用延遲分批抓取，完美對齊 CSS 展開動畫的節奏
-            setTimeout(sendHeight, 100);
-            setTimeout(sendHeight, 300);
-            setTimeout(sendHeight, 500);
-            setTimeout(sendHeight, 800); // 買個保險，確保完全展開
-        });
-    </script>
-
-  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.9/iframeResizer.contentWindow.min.js"></script>
 <body>
 
 <!-- ============================================================
