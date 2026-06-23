@@ -866,25 +866,19 @@ textarea.text-input {
 </head>
 
   <script>
-    // 自動回報最新高度給外部 WordPress 的功能
-    function reportHeight() {
-        // 量取當下整張網頁的實際總高度
-        var currentHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-        // 將高度數據包裝並發送出去（* 代表允許任何網域接收，確保安全也可以改成你的官網網址）
-        window.parent.postMessage({ type: 'resize-iframe', height: currentHeight }, '*');
-    }
-
-    // 1. 當網頁完全載入時，先回報一次初始高度
-    window.addEventListener('load', reportHeight);
-
-    // 2. 當網頁視窗大小改變時（例如手機旋轉），也重新計算
-    window.addEventListener('resize', reportHeight);
-
-    // 3. 關鍵：監聽整個網頁的點擊事件（當使用者按 + 展開 FAQ 時，觸發高度回報）
-    document.addEventListener('click', function() {
-        // 稍微延遲 100 毫秒，確保摺疊選單展開的動畫完成後，量到的高度最精準
-        setTimeout(reportHeight, 100);
+    // 使用 ResizeObserver 完美取代舊的點擊監聽與延遲
+    const resizeObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            // 只要偵測到 body 的尺寸有變動，就即時量取最新高度
+            const newHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+            
+            // 立即廣播給外部 WordPress 爸爸
+            window.parent.postMessage({ type: 'resize-iframe', height: newHeight }, '*');
+        }
     });
+
+    // 強力鎖定監聽整個網頁 body，不管是點擊 + 展開、動畫播放中，還是手機旋轉，都能精準捕捉
+    resizeObserver.observe(document.body);
 </script>
 
   
