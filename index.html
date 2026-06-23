@@ -866,18 +866,20 @@ textarea.text-input {
 </head>
 
   <script>
-    // 使用 ResizeObserver 完美取代舊的點擊監聽與延遲
+    let lastReportedHeight = 0;
+
     const resizeObserver = new ResizeObserver(entries => {
         for (let entry of entries) {
-            // 只要偵測到 body 的尺寸有變動，就即時量取最新高度
             const newHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
             
-            // 立即廣播給外部 WordPress 爸爸
-            window.parent.postMessage({ type: 'resize-iframe', height: newHeight }, '*');
+            // 關鍵防線：只有當高度變化大於 10px 時，才發送訊號，防止 1px 的拉扯引發無限迴圈
+            if (Math.abs(newHeight - lastReportedHeight) > 10) {
+                lastReportedHeight = newHeight;
+                window.parent.postMessage({ type: 'resize-iframe', height: newHeight }, '*');
+            }
         }
     });
 
-    // 強力鎖定監聽整個網頁 body，不管是點擊 + 展開、動畫播放中，還是手機旋轉，都能精準捕捉
     resizeObserver.observe(document.body);
 </script>
 
